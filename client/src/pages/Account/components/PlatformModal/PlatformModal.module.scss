@@ -1,0 +1,28 @@
+.card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &:global(.ant-card-body) {
+    padding: $gap-12 !important;
+  }
+}
+
+.cardConnected {
+  background-color: $primary-red-bg !important;
+  border-color: $primary-red !important;
+  cursor: default !important;
+}
+
+.iconFontSize {
+  font-size: $font-size-28;
+}
+
+.loadingIcon {
+  font-size: $font-size-24;
+  color: $primary-red;
+}

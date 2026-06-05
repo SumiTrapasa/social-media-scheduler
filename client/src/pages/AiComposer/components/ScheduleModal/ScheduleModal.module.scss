@@ -1,0 +1,26 @@
+.modalTitle {
+  margin-bottom: $gap-16;
+}
+
+.previewContainer {
+  height: 400px;
+  overflow: auto;
+}
+
+.contentText {
+  white-space: pre-wrap;
+}
+
+.platformTag {
+  padding: $gap-8;
+  font-size: $font-size-24;
+}
+
+.platformTagInactive {
+  color: $text-secondary !important;
+  cursor: pointer;
+}
+
+.halfWidth {
+  width: $width-50-percent;
+}

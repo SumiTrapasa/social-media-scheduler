@@ -1,9 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../models/User.js";
 
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: InstanceType<typeof User> | null;
+}
+
+interface DecodedToken extends JwtPayload {
+  id: string;
 }
 
 export const protect = async (
@@ -18,7 +22,10 @@ export const protect = async (
   ) {
     try {
       token = req.headers.authorization.split(" ")[1];
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET!,
+      ) as DecodedToken;
       req.user = await User.findById(decoded.id).select("-password");
       next();
     } catch (error) {

@@ -1,0 +1,44 @@
+.container {
+  width: $width-100-percent;
+}
+
+.title {
+  margin-top: $gap-80;
+  margin-bottom: $gap-36;
+}
+
+.card {
+  width: $width-100-percent;
+  max-width: $max-width-card;
+}
+
+.textarea {
+  resize: none;
+}
+
+.generationsContainer {
+  width: $width-100-percent;
+  max-width: $max-width-container;
+  margin: 0 auto;
+  margin-top: $gap-32;
+  padding-left: $gap-16;
+  padding-right: $gap-16;
+}
+
+.generationsHeader {
+  margin-bottom: 0;
+}
+
+.switchOn {
+  background-color: $primary-red !important;
+  border-color: $primary-red !important;
+}
+
+.toneButton:hover {
+  color: $primary-red !important;
+  border-color: $primary-red !important;
+}
+
+.toneButtonActive.card {
+  color: $white !important;
+}

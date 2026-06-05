@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.7.0",
+    "@huggingface/inference": "^4.13.18",
     "@zernio/node": "^0.2.192",
     "axios": "^1.16.1",
     "bcrypt": "^6.0.0",

@@ -12,7 +12,7 @@ const postRouter = Router();
 
 postRouter.get("/", protect, getPost);
 postRouter.get("/generations", protect, getGenerations);
-postRouter.post("/", protect, upload.single("image"), schedulePost);
+postRouter.post("/", protect, upload.single("media"), schedulePost);
 postRouter.post("/generate", protect, generatePost);
 
 export default postRouter;
