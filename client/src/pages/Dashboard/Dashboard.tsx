@@ -1,17 +1,20 @@
-import { Card, Col, Flex, Row, Tag, Typography, message } from "antd";
+import { Card, Col, Flex, Row, Tag, Typography } from "antd";
 import {
   ActivityIcon,
   CheckCircleIcon,
   ClockIcon,
   Share2Icon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ListData from "./components/ListData";
 import DashboardHeader from "./components/DashboardHeader";
 import StatCard from "./components/StatCard";
-import api from "@/api/axios";
-import type { Account, Activity, Post } from "@/types";
-import { API_ENDPOINTS } from "@/constants/paths";
+import {
+  dummyAccountsData,
+  dummyActivityData,
+  dummyPostsData,
+} from "@/assets/assets";
+import type { Activity } from "@/types";
 
 const Dashboard: React.FC = () => {
   const [states, setStates] = useState({
@@ -21,32 +24,16 @@ const Dashboard: React.FC = () => {
   });
   const [activities, setActivities] = useState<Activity[]>([]);
 
-  const fetchDashboardData = useCallback(async () => {
-    try {
-      const [postRes, accountsRes, activitiesRes] = await Promise.all([
-        api.get(API_ENDPOINTS.POSTS.BASE),
-        api.get(API_ENDPOINTS.ACCOUNTS.BASE),
-        api.get(API_ENDPOINTS.ACTIVITY.BASE),
-      ]);
-      const posts: Post[] = postRes.data;
-      const accounts: Account[] = accountsRes.data;
-      setStates({
-        scheduled: posts.filter((post) => post.status === "scheduled").length,
-        published: posts.filter((post) => post.status === "published").length,
-        connectedAccounts: accounts.filter(
-          (account) => account.status === "connected",
-        ).length,
-      });
-      setActivities(activitiesRes.data);
-    } catch (error) {
-      console.error("Dashboard fetch error:", error);
-      message.error("Failed to load dashboard data");
-    }
-  }, []);
-
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    setStates({
+      scheduled: dummyPostsData.filter((p) => p.status === "scheduled").length,
+      published: dummyPostsData.filter((p) => p.status === "published").length,
+      connectedAccounts: dummyAccountsData.filter(
+        (a) => a.status === "connected",
+      ).length,
+    });
+    setActivities(dummyActivityData);
+  }, []);
 
   const statCards = useMemo(
     () => [
