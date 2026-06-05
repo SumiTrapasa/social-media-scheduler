@@ -1,29 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Col, Flex, Row, Tag, Typography } from "antd";
 import { Calendar, Send } from "lucide-react";
-import api from "@/api/axios";
 import type { Post } from "@/types";
-import { API_ENDPOINTS } from "@/constants/paths";
+import { dummyPostsData } from "@/assets/assets";
 import ComposePost from "./components/ComposePost/ComposePost";
 import PostListCard from "./components/PostListCard/PostListCard";
 
 const Scheduler: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
 
-  const fetchPosts = useCallback(async () => {
-    try {
-      const { data } = await api.get(API_ENDPOINTS.POSTS.BASE);
-      setPosts(data.reverse());
-    } catch (error) {
-      console.error("Failed to fetch posts:", error);
-    }
-  }, []);
+  const fetchPosts = () => {
+    setPosts([...dummyPostsData].reverse());
+  };
 
   useEffect(() => {
     fetchPosts();
-    const interval = setInterval(fetchPosts, 10000);
-    return () => clearInterval(interval);
-  }, [fetchPosts]);
+  }, []);
 
   const scheduled = useMemo(
     () => posts.filter((p) => p.status === "scheduled"),

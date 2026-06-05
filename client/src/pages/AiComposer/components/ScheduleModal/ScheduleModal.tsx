@@ -13,10 +13,8 @@ import {
 import { PLATFORMS } from "@/assets/assets";
 import { useState, useEffect } from "react";
 import { TimerIcon } from "lucide-react";
-import api from "@/api/axios";
 import type { Dayjs } from "dayjs";
-import type { Account, Generation } from "@/types";
-import { API_ENDPOINTS } from "@/constants/paths";
+import type { Generation } from "@/types";
 import styles from "./ScheduleModal.module.scss";
 
 interface ScheduleModalProps {
@@ -34,18 +32,8 @@ const ScheduleModal = ({ open, onClose, gen }: ScheduleModalProps) => {
 
   useEffect(() => {
     if (open) {
-      const fetchConnected = async () => {
-        try {
-          const { data } = await api.get(API_ENDPOINTS.ACCOUNTS.BASE);
-          const connected = data
-            .filter((acc: Account) => acc.status === "connected")
-            .map((acc: Account) => acc.platform);
-          setConnectedPlatforms(connected);
-        } catch (error) {
-          console.error("Failed to fetch connected accounts", error);
-        }
-      };
-      fetchConnected();
+      // Demo mode: assume platforms connected
+      setConnectedPlatforms(["twitter", "linkedin", "facebook", "instagram"]);
     } else {
       setSelectedPlatforms([]);
       setScheduleDate(null);
@@ -77,21 +65,10 @@ const ScheduleModal = ({ open, onClose, gen }: ScheduleModalProps) => {
       message.error("Please select a date and time");
       return;
     }
-    const scheduleFor = scheduleDate
-      .hour(scheduleTime.hour())
-      .minute(scheduleTime.minute())
-      .toISOString();
-
     setScheduling(true);
     try {
-      await api.post(API_ENDPOINTS.POSTS.BASE, {
-        content: gen.content,
-        mediaUrl: gen.mediaUrl,
-        mediaType: gen.mediaType,
-        scheduledFor: scheduleFor,
-        platforms: JSON.stringify(selectedPlatforms),
-        status: "scheduled",
-      });
+      // Simulate scheduling delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       message.success("AI Post scheduled successfully");
       onClose();
     } finally {

@@ -13,9 +13,8 @@ import {
 import { ArrowRight, HistoryIcon } from "lucide-react";
 import styles from "./AiComposer.module.scss";
 import ScheduleModal from "./components/ScheduleModal/ScheduleModal";
-import api from "@/api/axios";
+import { dummyGenerationData } from "@/assets/assets";
 import type { Generation } from "@/types";
-import { API_ENDPOINTS } from "@/constants/paths";
 import GenerationCard from "./components/GenerationCard/GenerationCard";
 
 const TONES = ["Professional", "Creative", "Funny", "Minimalist", "Excited"];
@@ -32,8 +31,7 @@ const AiComposer: React.FC = () => {
   );
 
   const fetchGenerations = async () => {
-    const { data } = await api.get(API_ENDPOINTS.POSTS.GENERATIONS);
-    setGenerations(data);
+    setGenerations(dummyGenerationData);
   };
 
   const handleGenerations = async () => {
@@ -43,13 +41,20 @@ const AiComposer: React.FC = () => {
     }
     setLoading(true);
     try {
-      const { data } = await api.post(API_ENDPOINTS.POSTS.GENERATE, {
+      // Simulate AI thinking delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const mockNewGen: Generation = {
+        _id: Math.random().toString(36).substr(2, 9),
+        content: `(Demo) Generated post for: ${prompt}. Tone: ${tone}.`,
         prompt,
         tone,
-        generateImage,
-      });
-      setGenerations([data, ...generations]);
-      setActiveScheduler(data);
+        mediaUrl: generateImage ? "https://picsum.photos/800/400" : undefined,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        user: "demo-user",
+      };
+      setGenerations([mockNewGen, ...generations]);
+      setActiveScheduler(mockNewGen);
       message.success("Content generated successfully");
       setPrompt("");
     } finally {
