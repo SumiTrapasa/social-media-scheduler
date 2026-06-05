@@ -1,0 +1,38 @@
+.platformTag {
+  padding: $gap-8;
+}
+
+.iconFontSize {
+  font-size: $font-size-22;
+}
+
+.imagePreview {
+  width: $width-100-percent;
+  border-radius: $border-radius-8;
+  max-height: 300px;
+  object-fit: cover;
+
+  &:not(:first-of-type) {
+    object-fit: contain;
+  }
+}
+
+.uploadArea {
+  position: relative;
+}
+
+.removeButton {
+  position: absolute;
+  top: $gap-16;
+  right: $gap-16;
+}
+
+.fullWidth {
+  width: $width-100-percent;
+}
+
+.smallFontSize {
+  font-size: $font-size-12;
+  margin-top: $gap-4;
+  margin-right: $gap-4;
+}

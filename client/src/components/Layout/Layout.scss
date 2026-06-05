@@ -1,0 +1,63 @@
+.main-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.custom-sider {
+  height: 100vh;
+  background-color: $white;
+}
+
+.sidebar-logo {
+  height: 32px;
+  margin: $gap-16;
+  margin-left: -12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.inner-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-header {
+  padding: $header-padding !important;
+  display: flex;
+  flex-direction: row;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.header-title {
+  margin: 0 !important;
+}
+
+.header-description {
+  font-size: 12px;
+}
+
+.header-button {
+  font-size: 18px;
+}
+
+.custom-content {
+  margin: $gap-24 $gap-16 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.content-inner {
+  padding: $gap-24;
+  padding-top: 0;
+  min-height: 100%;
+}
+
+.custom-footer {
+  text-align: center;
+  flex-shrink: 0;
+}

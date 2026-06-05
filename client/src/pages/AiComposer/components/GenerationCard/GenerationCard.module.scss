@@ -1,0 +1,25 @@
+.card {
+  height: 100%;
+
+  :global(.ant-card-body) {
+    height: 100%;
+  }
+}
+
+.flexContainer {
+  height: 100%;
+}
+
+.generationImage {
+  max-height: 600px;
+  object-fit: contain;
+  width: 100%;
+}
+
+.scheduleButton {
+  color: $text-secondary !important;
+  &:hover {
+    background-color: $primary-red !important;
+    color: $white !important;
+  }
+}

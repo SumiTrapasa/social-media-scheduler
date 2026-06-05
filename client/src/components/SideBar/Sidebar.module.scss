@@ -1,0 +1,23 @@
+.sidebarContainer {
+  height: 100%;
+}
+
+.sidebarContent {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebarFooter {
+  padding: $gap-16;
+  margin-bottom: $gap-8;
+}
+
+.avatar {
+  background-color: $primary-red;
+  color: $white;
+}
+
+.logoutButton {
+  padding-left: $gap-4;
+  padding-top: $gap-24;
+}
