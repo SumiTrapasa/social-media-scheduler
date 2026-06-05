@@ -1,48 +1,11 @@
 import { Response } from "express";
 import { GoogleGenAI } from "@google/genai";
-import axios from "axios";
 import cloudinary from "../config/cloudinary.js";
+import hf from "../config/huggingface.js";
 import Generation from "../models/Generation.js";
 import { AuthRequest } from "../middleware/authMiddleware.js";
 import Post from "../models/posts.js";
-
-const pollLeonardoJob = async (
-  generationId: string,
-  apikey: string,
-): Promise<string> => {
-  const maxRetries = 5;
-  const delay = 5000;
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await axios.get(
-        `https://cloud.leonardo.ai/api/rest/v1/generations/${generationId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${apikey}`,
-            accept: "application/json",
-          },
-        },
-      );
-      const generation = response.data.generations_by_pk;
-      if (generation.status === "COMPLETE") {
-        if (
-          generation.generated_images &&
-          generation.generated_images.length > 0
-        ) {
-          return generation.generated_images[0].url;
-        }
-        throw new Error("Generation complete but no images found");
-      }
-      if (generation.status === "FAILED") {
-        throw new Error("Image generation failed");
-      }
-    } catch (error) {
-      console.error(`Error polling Leonardo job (attempt ${i + 1}):`, error);
-    }
-    await new Promise((resolve) => setTimeout(resolve, delay));
-  }
-  throw new Error("Max retries reached while polling Leonardo job");
-};
+import ActivityLog from "../models/activity.js";
 
 //generate post
 // POST /api/posts/generate
@@ -51,6 +14,11 @@ export const generatePost = async (
   res: Response,
 ): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
     const { prompt, tone, generateImage } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -62,10 +30,10 @@ export const generatePost = async (
     const ai = new GoogleGenAI({ apiKey });
     const textResponse = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Generate a social media post based on this promt: ${prompt}.
+      contents: `Generate a social media post based on this prompt: ${prompt}.
       Tone: ${tone}. 
-      Include relavent hastags. 
-      Format the responce as JSON woth "content" and "ImagePrompt" fields.
+      Include relevant hashtags. 
+      Format the response as JSON with "content" and "ImagePrompt" fields.
       The "ImagePrompt" should be a highly descriptive prompt for an image generator that complements the post.
       `,
     });
@@ -90,41 +58,30 @@ export const generatePost = async (
     let mediaUrl = "";
     if (generateImage) {
       try {
-        const leonardoKey = process.env.LEONARDO_API_KEY;
-        if (leonardoKey) {
-          const leoResponse = await axios.post(
-            "https://cloud.leonardo.ai/api/rest/v2/generations",
-            {
-              public: false,
-              model: "gpt-image-2",
-              parameters: {
-                prompt: imagePrompt,
-                quality: "LOW",
-                Quantity: 1,
-                width: 1024,
-                height: 1024,
-                prompt_enhance: "OFF",
-              },
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${leonardoKey}`,
-                "Content-Type": "application/json",
-                accept: "application/json",
-              },
-            },
-          );
-          const generationId = leoResponse.data.generate.generationId;
-          const tempUrl = await pollLeonardoJob(generationId, leonardoKey!);
+        // Call the text-to-image API
+        const responseBlob = await hf.textToImage({
+          model: "black-forest-labs/FLUX.1-schnell",
+          inputs: imagePrompt,
+          parameters: {
+            negative_prompt: "blurry, low quality, distorted",
+          },
+        });
 
-          //upload to cloudinary for persostance
-          const uploadResult = await cloudinary.uploader.upload(tempUrl, {
-            folder: "ai-generations",
-          });
-          mediaUrl = uploadResult.secure_url;
-        }
+        const buffer = Buffer.from(await (responseBlob as any).arrayBuffer());
+        const dataUri = `data:image/png;base64,${buffer.toString("base64")}`;
+
+        const uploadResult = await cloudinary.uploader.upload(dataUri, {
+          folder: "ai-generations",
+        });
+        mediaUrl = uploadResult.secure_url;
+        console.log("Image generated and uploaded successfully");
       } catch (error) {
-        console.error("Error generating image:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error(
+          "Error generating image with Hugging Face:",
+          errorMessage,
+        );
       }
     }
     const generations = await Generation.create({
@@ -135,9 +92,19 @@ export const generatePost = async (
       mediaUrl,
       mediaType: mediaUrl ? "image" : undefined,
     });
+
+    await ActivityLog.create({
+      user: req.user._id,
+      actionType: "AI_REPLY",
+      description: `Generated AI post content with tone: ${tone}`,
+      aiGeneratedText: content,
+    });
+
     res.status(200).json(generations);
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || "Internal Server Error" });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: errorMessage });
   }
 };
 
@@ -148,12 +115,19 @@ export const getGenerations = async (
   res: Response,
 ): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const generations = await Generation.find({ user: req.user._id }).sort({
       createdAt: -1,
     });
+    console.log(generations);
     res.status(200).json(generations);
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || "Internal Server Error" });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: errorMessage });
   }
 };
 
@@ -164,10 +138,16 @@ export const getPost = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const posts = Post.find({ user: req.user._id });
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const posts = await Post.find({ user: req.user._id });
     res.json(posts);
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || "Internal Server Error" });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: errorMessage });
   }
 };
 
@@ -178,7 +158,12 @@ export const schedulePost = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { content, platforms, scheduleFor, status } = req.body;
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const { content, platforms, scheduledFor, status } = req.body;
     let parsePlatform = platforms;
     if (typeof platforms === "string") {
       try {
@@ -187,26 +172,27 @@ export const schedulePost = async (
         parsePlatform = platforms.split(",");
       }
     }
+
     let mediaUrl = req.body.mediaUrl;
     let mediaType = req.body.mediaType;
-
     if (req.file) {
-      const result: any = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            resource_type: "auto",
-            folder: "social-scheduler",
-          },
-          (error, result) => {
-            if (result) {
-              resolve(result);
-            } else {
-              reject(error);
-            }
-          },
-        );
-        stream.end(req.file!.buffer);
-      });
+      const result: { secure_url: string; resource_type: string } =
+        await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              resource_type: "auto",
+              folder: "social-scheduler",
+            },
+            (error, result) => {
+              if (result) {
+                resolve(result);
+              } else {
+                reject(error);
+              }
+            },
+          );
+          stream.end(req.file!.buffer);
+        });
       mediaUrl = result.secure_url;
       mediaType = result.resource_type == "video" ? "video" : "image";
     }
@@ -216,12 +202,22 @@ export const schedulePost = async (
       content,
       mediaUrl,
       mediaType,
-      platform: parsePlatform,
-      scheduledFor: scheduleFor,
+      platforms: Array.isArray(parsePlatform) ? parsePlatform : [parsePlatform],
+      scheduledFor,
       status,
     });
+
+    await ActivityLog.create({
+      user: req.user._id,
+      actionType: "POST_SCHEDULED",
+      description: `Scheduled a new post for ${new Date(scheduledFor).toLocaleString()}`,
+      relatedPost: post._id,
+    });
+
     res.status(201).json(post);
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || "Internal Server Error" });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: errorMessage });
   }
 };

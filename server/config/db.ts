@@ -17,8 +17,9 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
       family: 4, // Force IPv4 to resolve common DNS resolution issues
     });
-  } catch (error: any) {
-    if (error.code === "ECONNREFUSED" && error.syscall === "querySrv") {
+  } catch (error) {
+    const err = error as { code?: string; syscall?: string };
+    if (err.code === "ECONNREFUSED" && err.syscall === "querySrv") {
       console.error(
         "DNS SRV Error: Your network cannot resolve MongoDB SRV records.",
       );
