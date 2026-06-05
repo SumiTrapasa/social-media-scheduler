@@ -11,10 +11,16 @@ export const getAccounts = async (
   res: Response,
 ): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const accounts = await Account.find({ user: req.user._id });
     res.json(accounts);
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || "Internal Server Error" });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: errorMessage });
   }
 };
 
@@ -25,6 +31,10 @@ export const addAccount = async (
   res: Response,
 ): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const { platform, handle, avatarUrl } = req.body;
     const account = await Account.create({
       user: req.user._id,
@@ -33,8 +43,10 @@ export const addAccount = async (
       avatarUrl,
     });
     res.status(201).json(account);
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || "Internal Server Error" });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: errorMessage });
   }
 };
 
@@ -45,6 +57,10 @@ export const disconnectAccount = async (
   res: Response,
 ): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const account = await Account.findOne({
       _id: req.params.id,
       user: req.user._id,
@@ -58,15 +74,17 @@ export const disconnectAccount = async (
         await zernio.accounts.deleteAccount({
           path: { accountId: account.zernioAccountId },
         });
-      } catch (error: any) {
-        res
-          .status(500)
-          .json({ error: error?.message || "Internal Server Error" });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Internal Server Error";
+        res.status(500).json({ error: errorMessage });
       }
     }
     await account.deleteOne();
     res.json({ message: "Account deleted successfully" });
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || "Internal Server Error" });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: errorMessage });
   }
 };

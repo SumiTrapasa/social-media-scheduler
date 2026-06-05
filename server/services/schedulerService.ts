@@ -1,9 +1,19 @@
 import cron from "node-cron";
 import Post from "../models/posts.js";
 import Account from "../models/account.js";
-import { platform } from "node:os";
 import zernio from "../config/zernio.js";
 import ActivityLog from "../models/activity.js";
+
+interface PublishPostResponse {
+  post?: Record<string, unknown>;
+}
+
+interface ErrorResponse {
+  response?: {
+    data?: Record<string, unknown>;
+  };
+  message?: string;
+}
 
 export const initScheduler = () => {
   cron.schedule("* * * * *", async () => {
@@ -18,7 +28,7 @@ export const initScheduler = () => {
         try {
           const accounts = await Account.find({
             user: post.user,
-            platform: post.platform,
+            platform: { $in: post.platforms },
             status: "connected",
             zernioAccountId: { $exists: true },
           });
@@ -50,7 +60,8 @@ export const initScheduler = () => {
           );
 
           const response = await zernio.posts.createPost({ body: payload });
-          const publishPost = (response.data as any)?.post || response.data;
+          const publishPost =
+            (response.data as PublishPostResponse)?.post || response.data;
 
           if (!publishPost) {
             throw new Error("Failed to get post from Zernio response");
@@ -64,13 +75,14 @@ export const initScheduler = () => {
           await ActivityLog.create({
             user: post.user,
             actionType: "POST_PUBLISHED",
-            description: `published post to ${accounts.map((acc) => acc.platform).join(",")}`,
+            description: `Published post to ${accounts.map((acc) => acc.platform).join(",")}`,
             relatedPost: post._id,
           });
-        } catch (error: any) {
+        } catch (error) {
+          const err = error as ErrorResponse;
           console.error(
             `Error processing post ${post._id}:`,
-            error?.response?.data || error?.message || error,
+            err?.response?.data || err?.message || error,
           );
           post.status = "failed";
           await post.save();
@@ -78,7 +90,7 @@ export const initScheduler = () => {
       }
       if (postsToPublish.length > 0) {
         console.log(
-          `Published ${postsToPublish.length} posts at ${now.toISOString()} `,
+          `Evaluated ${postsToPublish.length} posts at ${now.toISOString()} `,
         );
       }
     } catch (error) {

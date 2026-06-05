@@ -4,7 +4,10 @@ import User from "../models/User.js";
 import Account from "../models/account.js";
 import { AuthRequest } from "../middleware/authMiddleware.js";
 
-const getOrCraeteZernioProfile = async (user: any): Promise<string> => {
+const getOrCreateZernioProfile = async (
+  user: AuthRequest["user"],
+): Promise<string> => {
+  if (!user) throw new Error("User not authenticated");
   // Logic to get or create Zernio profile and return profile ID
   try {
     const result = await zernio.profiles.listProfiles();
@@ -45,8 +48,13 @@ export const getOAuthURL = async (
   res: Response,
 ): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
     const { platform } = req.params;
-    const profileId = await getOrCraeteZernioProfile(req.user);
+    const profileId = await getOrCreateZernioProfile(req.user);
     const origin = req.headers.origin;
     const redirectUri = `${origin}/accounts`;
     const results = await zernio.connect.getConnectUrl({
@@ -57,7 +65,7 @@ export const getOAuthURL = async (
       },
     });
     const data = results.data;
-    console.log("Zernio Connect URL Response:", JSON.stringify(data, null, 2));
+    console.log("Zernio Connect URL Response:", data);
 
     const authUrl = data.authUrl;
 
@@ -73,17 +81,22 @@ export const getOAuthURL = async (
 };
 
 //sync connected accounts with mongodb
-//GET /api/auth/sync
+//GET /api/oauth/sync
 export const syncAccounts = async (
   req: AuthRequest,
   res: Response,
 ): Promise<void> => {
   try {
-    const profileId = await getOrCraeteZernioProfile(req.user);
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const profileId = await getOrCreateZernioProfile(req.user);
     const result = await zernio.accounts.listAccounts({ query: { profileId } });
 
     const data = result.data;
-    const zernioAccounts = data?.accounts || Array.isArray(data) ? data : [];
+    const zernioAccounts = Array.isArray(data) ? data : data?.accounts || [];
     const supportedPlatforms = ["twitter", "instagram", "linkedin", "facebook"];
     const syncedAccounts = [];
 
