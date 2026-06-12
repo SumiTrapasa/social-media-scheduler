@@ -1,6 +1,6 @@
-# SocialFlow: AI-Driven Multi-Platform Automation
+# Medial Scheduler: AI-Driven Multi-Platform Automation
 
-## **SocialFlow** is a sophisticated social media management engine designed to bridge the gap between creative ideation and multi-channel distribution. By integrating state-of-the-art LLMs with automated scheduling services, it enables users to maintain a 24/7 digital presence with minimal manual overhead.
+#### **Medial Scheduler** is a sophisticated social media management engine designed to bridge the gap between creative ideation and multi-channel distribution. By integrating state-of-the-art LLMs with automated scheduling services, it enables users to maintain a 24/7 digital presence with minimal manual overhead.
 
 ## 🎯 The Purpose & Concept
 
@@ -35,7 +35,7 @@ The gateway to your personalized automation suite.
 
 - **Functionality**: Secure JWT-based entry. Users can toggle between Sign In and Sign Up.
 - **UI Highlight**: Features a minimalist, high-contrast design using the Montserrat font for a professional "SaaS" feel.
-  ![alt text](image-6.png)
+  ![alt text](doc/images/image-6.png)
 
 ### 2. The Command Center (Dashboard)
 
@@ -44,7 +44,7 @@ Provides a holistic, bird's-eye view of your social presence.
 - **Real-time Metrics**: Quick-glance cards showing counts for Pending Schedules, Total Publications, and Active Connections.
 - **Activity Feed (ListData)**: A color-coded audit trail of system events. Green for published, Blue for AI generations, and Yellow for upcoming schedules.
 - **Dynamic Greetings**: A contextual header that greets the user based on their local time (Morning/Afternoon/Evening).
-  ![alt text](image.png)
+  ![alt text](doc/images/image.png)
 
 ### 3. Intelligence Hub (AI Composer)
 
@@ -54,7 +54,7 @@ Where ideas turn into digital assets.
 - **Visual Synthesis**: A toggle to generate high-fidelity AI images via FLUX models. The system automatically handles the prompt engineering for the visual based on your text content.
 - **History Feed**: Browse through all previous AI generations, allowing you to re-schedule or refine old ideas.
 - **AI-Driven Instagram Integration**: Seamlessly publish AI-generated visuals directly to Instagram, satisfying the platform's media-first requirements automatically.
-  ![alt text](image-1.png)
+  ![alt text](doc/images/image-1.png)
 
 ### 4. Execution Engine (Scheduler)
 
@@ -63,7 +63,7 @@ Complete control over your publication timeline.
 - **Advanced Composition**: Manually draft content, upload your own media, and select specific platforms.
 - **Platform Guardrails**: The UI dynamically detects which accounts you've connected. Unconnected platforms are disabled (grayscale) to prevent errors.
 - **Timeline Split**: Separate views for "Upcoming" (queued content) and "Published" (historical archives).
-  ![alt text](image-2.png)
+  ![alt text](doc/images/image-2.png)
 
 ### 5. Integration Manager (Account Management)
 
@@ -71,7 +71,7 @@ The bridge to the social world.
 
 - **OAuth Connectivity**: Link your X (Twitter), LinkedIn, Facebook, and Instagram accounts.
 - **Connection Status**: Real-time health checks on your social tokens to ensure automation never fails.
-  ![alt text](image-3.png)
+  ![alt text](doc/images/image-3.png)
 
 ---
 
@@ -81,9 +81,8 @@ The bridge to the social world.
 2.  **Ideation**: Use the **AI Composer** to turn a simple thought into a ready-to-post draft with a matching AI image.
 3.  **Refinement**: Review the generation, then click "Schedule" to open the platform selection modal.
 4.  **Queueing**: Pick your peak audience time and select the target platforms. Your post enters the "Upcoming" queue.
-5.  **Execution**: SocialFlow's backend cron-job takes over, handling the heavy lifting of API distribution while you sleep.
-6.  **Execution**: SocialFlow's backend cron-job takes over, handling the heavy lifting of API distribution (including AI-synthesized Instagram posts) while you sleep.
-7.  **Monitoring**: Visit the **Dashboard** to see your successful publications appear in the Activity Log in real-time.
+5.  **Execution**: SocialFlow's background worker (`node-cron`) handles the automated API handshakes and asset distribution (including media-heavy Instagram posts) at the scheduled time.
+6.  **Monitoring**: Visit the **Dashboard** to see your successful publications and system events appear in the Activity Log.
 
 ---
 
@@ -115,14 +114,14 @@ The bridge to the social world.
 
 The composer features a platform-first design, allowing users to toggle between accounts while receiving real-time character count feedback and media previews.
 
-![alt text](image-4.png)
+![alt text](doc/images/image-4.png)
 
 ### AI-Synthesized Instagram Post
 
 SocialFlow automates the entire Instagram workflow. Below is an example of a post where the AI drafted the caption, added trending hashtags, and generated a high-fidelity visual asset that was automatically published to the user's feed.
 
-![alt text](image-7.png)
-![alt text](image-8.png)
+![alt text](doc/images/image-7.png)
+![alt text](doc/images/image-8.png)
 
 ### Multi-Channel Scheduling
 
@@ -132,11 +131,11 @@ A split-view scheduler allows for the management of upcoming content while provi
 
 Every action taken by the AI or the user is recorded with unique visual identifiers, allowing for easy troubleshooting and performance tracking.
 
-![alt text](image-5.png)
+![alt text](doc/images/image-5.png)
 
 ## 🔮 Future Roadmap
 
-### 🛠️ Post Management Suite (In Progress)
+### 📊 Analytics & Insights (Planned)
 
 - **Edit Post**: A feature to modify content or rescheduling times for posts still in the "Upcoming" queue.
 - **Cancel & Delete**: One-click removal of scheduled posts to stop them before they go live.
