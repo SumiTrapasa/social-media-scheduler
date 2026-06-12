@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MailIcon, LockIcon, ArrowRightIcon, User2Icon } from "lucide-react";
-import api from "@/api/axios";
 import { useAuth } from "@/context/authContext";
-import { API_ENDPOINTS, ROUTES } from "@/constants/paths";
+import { ROUTES } from "@/constants/paths";
 
 export default function Login() {
   const [loginState, setLoginState] = useState(true);
@@ -18,17 +17,17 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await api.post(
-        loginState ? API_ENDPOINTS.AUTH.LOGIN : API_ENDPOINTS.AUTH.REGISTER,
-        {
-          name,
-          email,
-          password,
-        },
-      );
-      login({ email: data.email, name: data.name, _id: data.id }, data.tokens);
+      // Simulate network delay for demo
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const mockUser = { email, name: name || "Demo User", _id: "demo-id" };
+      const mockTokens = {
+        accessToken: "demo-access",
+        refreshToken: "demo-refresh",
+      };
+
+      login(mockUser, mockTokens.accessToken);
       navigate(ROUTES.DASHBOARD);
-      console.log(data);
     } catch {
       // Handled by interceptor
     } finally {
