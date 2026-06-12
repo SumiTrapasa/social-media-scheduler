@@ -1,12 +1,10 @@
 import { Button, Flex, message, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PLATFORMS } from "@/assets/assets";
+import { PLATFORMS, dummyAccountsData } from "@/assets/assets";
 import { Plus } from "lucide-react";
 import AccountList from "./components/AccountList/AccountList";
 import PlatformModal from "./components/PlatformModal/PlatformModal";
-import api from "@/api/axios";
 import type { Account as AccountType } from "@/types";
-import { API_ENDPOINTS } from "@/constants/paths";
 import styles from "./Account.module.scss";
 
 const Account: React.FC = () => {
@@ -15,17 +13,14 @@ const Account: React.FC = () => {
   const [showPlatformPicker, setShowPlatformPicker] = useState<boolean>(false);
 
   const fetchAccounts = useCallback(
-    async (isSync = false, platform?: string | null, successMsg?: string) => {
+    (isSync = false, platform?: string | null, successMsg?: string) => {
       if (isSync) {
         const label = platform
           ? platform.charAt(0).toUpperCase() + platform.slice(1)
           : "Social Media";
-        message.loading(`Syncing ${label} accounts...`);
-        await api.get(API_ENDPOINTS.ACCOUNTS.SYNC);
         message.success(successMsg || `${label} accounts synced successfully`);
       }
-      const { data } = await api.get(API_ENDPOINTS.ACCOUNTS.BASE);
-      setAccounts(data);
+      setAccounts(dummyAccountsData);
     },
     [],
   );
@@ -58,22 +53,17 @@ const Account: React.FC = () => {
     }
   }, [fetchAccounts]);
 
-  const handleConnect = async (platformId: string) => {
+  const handleConnect = (platformId: string) => {
     setConnecting(platformId);
-    try {
-      const { data } = await api.get(
-        API_ENDPOINTS.ACCOUNTS.OAUTH_URL(platformId),
-      );
-      window.location.href = data.authUrl;
-    } finally {
+    setTimeout(() => {
+      message.success(`(Demo) Successfully connected ${platformId}!`);
       setConnecting(null);
-    }
+    }, 1200);
   };
 
-  const handleDisconnect = async (accountId: string) => {
-    await api.delete(`${API_ENDPOINTS.ACCOUNTS.BASE}/${accountId}`);
+  const handleDisconnect = (accountId: string) => {
     message.success("Account disconnected successfully");
-    await fetchAccounts();
+    setAccounts((prev) => prev.filter((a) => a._id !== accountId));
   };
 
   const connectedIds = useMemo(

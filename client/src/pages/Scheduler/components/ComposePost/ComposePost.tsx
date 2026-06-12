@@ -16,12 +16,8 @@ import {
 } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import { XIcon } from "lucide-react";
-import type { Dayjs } from "dayjs";
 import { PLATFORMS } from "@/assets/assets";
-import api from "@/api/axios";
-import { API_ENDPOINTS } from "@/constants/paths";
 import styles from "./ComposePost.module.scss";
-import type { Account } from "@/types";
 
 interface ComposePostProps {
   onSuccess: () => void;
@@ -37,18 +33,8 @@ const ComposePost: React.FC<ComposePostProps> = ({ onSuccess, className }) => {
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchConnected = async () => {
-      try {
-        const { data } = await api.get(API_ENDPOINTS.ACCOUNTS.BASE);
-        const connected = data
-          .filter((acc: Account) => acc.status === "connected")
-          .map((acc: Account) => acc.platform);
-        setConnectedPlatforms(connected);
-      } catch (error) {
-        console.error("Failed to fetch connected accounts", error);
-      }
-    };
-    fetchConnected();
+    // Demo mode: assume all platforms are connected
+    setConnectedPlatforms(["twitter", "linkedin", "facebook", "instagram"]);
   }, []);
 
   const togglePlatform = (platformId: string) => {
@@ -59,11 +45,7 @@ const ComposePost: React.FC<ComposePostProps> = ({ onSuccess, className }) => {
     );
   };
 
-  const handleSchedule = async (values: {
-    content: string;
-    date: Dayjs;
-    time: Dayjs;
-  }) => {
+  const handleSchedule = async () => {
     if (selectedPlatforms.length === 0) {
       message.error("Please select at least one platform");
       return;
@@ -73,25 +55,10 @@ const ComposePost: React.FC<ComposePostProps> = ({ onSuccess, className }) => {
       return;
     }
 
-    const scheduleFor = values.date
-      .hour(values.time.hour())
-      .minute(values.time.minute())
-      .toISOString();
-
-    const formData = new FormData();
-    formData.append("content", values.content);
-    formData.append("scheduledFor", scheduleFor);
-    formData.append("status", "scheduled");
-    formData.append("platforms", JSON.stringify(selectedPlatforms));
-    if (mediaFile) {
-      formData.append("media", mediaFile);
-    }
-
     setLoading(true);
     try {
-      await api.post(API_ENDPOINTS.POSTS.BASE, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Simulate API success
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       message.success("Post scheduled successfully");
       form.resetFields();
       setSelectedPlatforms([]);
